@@ -1,11 +1,14 @@
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "./theme";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { Entypo } from "@expo/vector-icons";
 
 type IShoppingListItem = {
   name: string;
+  isCompleted?: boolean;
 };
 
-export function ShoppingListItem({ name }: IShoppingListItem) {
+export function ShoppingListItem({ name, isCompleted }: IShoppingListItem) {
   const handleDelete = () => {
     Alert.alert(
       `Are you sure you want to delete ${name}?`,
@@ -24,15 +27,34 @@ export function ShoppingListItem({ name }: IShoppingListItem) {
     );
   };
   return (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemText}>{name}</Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleDelete}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.buttonText}>Delete</Text>
-      </TouchableOpacity>
+    <View
+      style={[
+        styles.itemContainer,
+        isCompleted ? styles.completedContainer : undefined,
+      ]}
+    >
+      <View style={styles.row}>
+        <Entypo
+          name={isCompleted ? "check" : "circle"}
+          size={24}
+          color={isCompleted ? theme.colorGray : theme.colorCerulean}
+        />
+        <Text
+          style={[
+            styles.itemText,
+            isCompleted ? styles.completedText : undefined,
+          ]}
+        >
+          {name}
+        </Text>
+        <TouchableOpacity hitSlop={20} onPress={handleDelete}>
+          <AntDesign
+            name="close-circle"
+            size={24}
+            color={isCompleted ? theme.colorGray : theme.colorRed}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -40,7 +62,7 @@ export function ShoppingListItem({ name }: IShoppingListItem) {
 export const styles = StyleSheet.create({
   itemContainer: {
     paddingVertical: 16,
-    paddingHorizontal: 8,
+    paddingHorizontal: 18,
     borderBottomWidth: 1,
     borderBottomColor: theme.colorCerulean,
     flexDirection: "row",
@@ -50,16 +72,21 @@ export const styles = StyleSheet.create({
   itemText: {
     fontSize: 18,
     fontWeight: "200",
+    marginLeft: 8,
+    flex: 1,
   },
-  button: {
-    backgroundColor: theme.colorBlack,
-    padding: 8,
-    borderRadius: 6,
+  completedContainer: {
+    backgroundColor: theme.colorLightGray,
+    borderBottomColor: theme.colorLightGray,
   },
-  buttonText: {
-    color: theme.colorWhite,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    letterSpacing: 1,
+  completedText: {
+    color: theme.colorGray,
+    textDecorationLine: "line-through",
+    textDecorationColor: theme.colorGray,
+  },
+  row: {
+    flexDirection: "row",
+    flex: 1,
+    alignItems: "center",
   },
 });

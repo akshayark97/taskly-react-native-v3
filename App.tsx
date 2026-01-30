@@ -5,10 +5,9 @@ import { ShoppingListItem } from "./ShoppingListItem";
 export default function App() {
   return (
     <View style={styles.container}>
-      <View style={[StyleSheet.absoluteFill, { backgroundColor: "pink" }]} />
       <ShoppingListItem name="Coffee" />
-      <ShoppingListItem name="Tea" />
-      <ShoppingListItem name="Milk" />
+      <ShoppingListItem name="Tea" isCompleted />
+      <ShoppingListItem name="Milk" isCompleted />
     </View>
   );
 }
