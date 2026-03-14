@@ -1,18 +1,16 @@
-import { StyleSheet, TextInput, View } from "react-native";
+import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import { theme } from "../theme";
 import { ShoppingListItem } from "../ShoppingListItem";
 import { useState } from "react";
 
+type ShoppingListItemType = {
+  id: string;
+  name: string;
+};
+
 export default function App() {
-  type ShoppingListItemType = {
-    id: string;
-    name: string;
-  };
-  const initialList: ShoppingListItemType[] = [
-    { id: "1", name: "Coffee" },
-    { id: "2", name: "Tea" },
-    { id: "3", name: "Milk" },
-  ];
+  const [value, setValue] = useState<string>();
+  const [shoppingList, setShoppingList] = useState<ShoppingListItemType[]>([]);
 
   const handleSubmit = () => {
     if (value) {
@@ -25,22 +23,29 @@ export default function App() {
     }
   };
 
-  const [value, setValue] = useState<string>();
-  const [shoppingList, setShoppingList] = useState(initialList);
   return (
-    <View style={styles.container}>
-      <TextInput
-        value={value}
-        style={styles.textInput}
-        onChangeText={setValue}
-        placeholder="E.g Coffee"
-        onSubmitEditing={handleSubmit}
-        returnKeyType="done"
-      />
-      {shoppingList.map((item) => (
-        <ShoppingListItem name={item.name} key={item.id} />
-      ))}
-    </View>
+    <FlatList
+      ListHeaderComponent={
+        <TextInput
+          value={value}
+          style={styles.textInput}
+          onChangeText={setValue}
+          placeholder="E.g Coffee"
+          onSubmitEditing={handleSubmit}
+          returnKeyType="done"
+        />
+      }
+      ListEmptyComponent={
+        <View style={styles.listEmptyContainer}>
+          <Text>Your shopping list is empty</Text>
+        </View>
+      }
+      data={shoppingList}
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      stickyHeaderIndices={[0]}
+      renderItem={({ item }) => <ShoppingListItem name={item.name} />}
+    ></FlatList>
   );
 }
 
@@ -48,7 +53,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colorWhite,
-    justifyContent: "center",
+    paddingTop: 12,
+  },
+  contentContainer: {
+    paddingBottom: 24,
   },
   textInput: {
     borderColor: theme.colorLightGray,
@@ -58,5 +66,11 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     marginHorizontal: 12,
     marginBottom: 12,
+    backgroundColor: theme.colorWhite,
+  },
+  listEmptyContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    marginVertical: 18,
   },
 });
