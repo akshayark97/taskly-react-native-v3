@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { theme } from "./theme";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Entypo } from "@expo/vector-icons";
@@ -6,9 +6,11 @@ import { Entypo } from "@expo/vector-icons";
 type IShoppingListItem = {
   name: string;
   isCompleted?: boolean;
+  onDelete: () => void;
+  onToggleComplete: () => void;
 };
 
-export function ShoppingListItem({ name, isCompleted }: IShoppingListItem) {
+export function ShoppingListItem({ name, isCompleted, onToggleComplete, onDelete }: IShoppingListItem) {
   const handleDelete = () => {
     Alert.alert(
       `Are you sure you want to delete ${name}?`,
@@ -16,7 +18,7 @@ export function ShoppingListItem({ name, isCompleted }: IShoppingListItem) {
       [
         {
           text: "Yes",
-          onPress: () => console.log(`Ok, deleting.`),
+          onPress: () => onDelete(),
           style: "destructive",
         },
         {
@@ -27,11 +29,12 @@ export function ShoppingListItem({ name, isCompleted }: IShoppingListItem) {
     );
   };
   return (
-    <View
+    <Pressable
       style={[
         styles.itemContainer,
         isCompleted ? styles.completedContainer : undefined,
       ]}
+      onPress={onToggleComplete}
     >
       <View style={styles.row}>
         <Entypo
@@ -55,7 +58,7 @@ export function ShoppingListItem({ name, isCompleted }: IShoppingListItem) {
           />
         </TouchableOpacity>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

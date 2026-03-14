@@ -6,6 +6,8 @@ import { useState } from "react";
 type ShoppingListItemType = {
   id: string;
   name: string;
+  completedAtTimestamp?: number;
+  lastUpdatedTimestamp?: number;
 };
 
 export default function App() {
@@ -15,12 +17,34 @@ export default function App() {
   const handleSubmit = () => {
     if (value) {
       const newShoppingList = [
-        { id: new Date().toISOString(), name: value },
+        { id: new Date().toISOString(), name: value, lastUpdatedTimeStamp: Date.now() },
         ...shoppingList,
       ];
       setShoppingList(newShoppingList);
       setValue(undefined);
     }
+  };
+
+  const handleDelete = (id: string) => {
+    const newShoppingList = shoppingList.filter((item) => item.id !== id);
+    setShoppingList(newShoppingList);
+  };
+
+  const handleToggleComplete = (id: string) => {
+    const newShoppingList = shoppingList.map((item) => {
+      if (item.id === id) {
+        return {
+          ...item,
+          completedAtTimestamp: item.completedAtTimestamp
+            ? undefined
+            : Date.now(),
+          lastUpdatedTimestamp: Date.now(),
+        };
+      } else {
+        return item;
+      }
+    });
+    setShoppingList(newShoppingList);
   };
 
   return (
@@ -44,8 +68,10 @@ export default function App() {
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
       stickyHeaderIndices={[0]}
-      renderItem={({ item }) => <ShoppingListItem name={item.name} />}
-    ></FlatList>
+      renderItem={({ item }) =>
+        <ShoppingListItem name={item.name} onDelete={() => handleDelete(item.id)} onToggleComplete={() => handleToggleComplete(item.id)} isCompleted={Boolean(item.completedAtTimestamp)} />
+      }
+    />
   );
 }
 
