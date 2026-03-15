@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../../utils/registerForPushNotificationsAsync";
 import { theme } from "../../theme";
@@ -10,9 +10,9 @@ import { getFromStorage, saveToStorage } from "../../utils/storage";
 // 10 seconds from now
 const frequency = 10 * 1000
 
-const countdownStorageKey = "taskly-countdown"
+export const countdownStorageKey = "taskly-countdown"
 
-type PersistedCountdownState = {
+export type PersistedCountdownState = {
     currentNotificationId: string | undefined;
     completedAtTimestamps: number[]
 }
@@ -24,6 +24,7 @@ type CountdownStatus = {
 
 export default function CounterScreen() {
     const [countdownState, setCountdownState] = useState<PersistedCountdownState>();
+    const [isLoading, setIsLoading] = useState(true)
     const [status, setStatus] = useState<CountdownStatus>({
         isOverdue: false,
         distance: {}
@@ -37,11 +38,16 @@ export default function CounterScreen() {
         init()
     }, [])
 
-    const lastCompletedAt = countdownState?.completedAtTimestamps[0]
+    const lastCompletedTimestamp = countdownState?.completedAtTimestamps[0]
 
     useEffect(() => {
         const intervalId = setInterval(() => {
-            const timestamp = lastCompletedAt ? lastCompletedAt + frequency : Date.now()
+            const timestamp = lastCompletedTimestamp ? lastCompletedTimestamp + frequency : Date.now()
+
+            if(lastCompletedTimestamp) {
+                setIsLoading(false)
+            }
+
             const isOverdue = isBefore(timestamp, Date.now())
 
             const distance = intervalToDuration(
@@ -54,7 +60,7 @@ export default function CounterScreen() {
         return () => {
             clearInterval(intervalId);
         };
-    }, [lastCompletedAt]);
+    }, [lastCompletedTimestamp]);
 
     const scheduleNotification = async () => {
         let pushNotificationId;
@@ -89,6 +95,14 @@ export default function CounterScreen() {
 
         await saveToStorage(countdownStorageKey, newCountdownState)
     };
+
+    if (isLoading) {
+        return (
+            <View style={styles.activityIndicator}>
+                <ActivityIndicator />
+            </View>
+        )
+    }
     return (
         <View
             style={[
@@ -168,4 +182,10 @@ const styles = StyleSheet.create({
     whiteText: {
         color: theme.colorWhite,
     },
+    activityIndicator: {
+        backgroundColor: theme.colorWhite,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1
+    }
 });
