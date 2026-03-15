@@ -1,14 +1,16 @@
-import { Text, View, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Text, View, StyleSheet, Alert, TouchableOpacity, ActivityIndicator, useWindowDimensions } from "react-native";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../../utils/registerForPushNotificationsAsync";
 import { theme } from "../../theme";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { intervalToDuration, isBefore } from "date-fns";
 import { TimeSegment } from "../../components/TimeSegment";
 import { getFromStorage, saveToStorage } from "../../utils/storage";
+import * as Haptics from 'expo-haptics'
+import ConfettiCannon from "react-native-confetti-cannon";
 
 // 10 seconds from now
-const frequency = 10 * 1000
+const frequency = 14 * 24 * 60 * 60 * 1000
 
 export const countdownStorageKey = "taskly-countdown"
 
@@ -29,6 +31,9 @@ export default function CounterScreen() {
         isOverdue: false,
         distance: {}
     });
+    const { width } = useWindowDimensions()
+
+    const confettiRef = useRef<any>(null)
 
     useEffect(() => {
         const init = async () => {
@@ -44,7 +49,7 @@ export default function CounterScreen() {
         const intervalId = setInterval(() => {
             const timestamp = lastCompletedTimestamp ? lastCompletedTimestamp + frequency : Date.now()
 
-            if(lastCompletedTimestamp) {
+            if (lastCompletedTimestamp) {
                 setIsLoading(false)
             }
 
@@ -63,12 +68,14 @@ export default function CounterScreen() {
     }, [lastCompletedTimestamp]);
 
     const scheduleNotification = async () => {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        confettiRef.current.start()
         let pushNotificationId;
         const result = await registerForPushNotificationsAsync();
         if (result === "granted") {
             pushNotificationId = await Notifications.scheduleNotificationAsync({
                 content: {
-                    title: "The thing is due!",
+                    title: "Car wash overdue!",
                 },
                 trigger: {
                     type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
@@ -111,9 +118,9 @@ export default function CounterScreen() {
             ]}
         >
             {!status.isOverdue ? (
-                <Text style={[styles.heading]}>Thing due in</Text>
+                <Text style={[styles.heading]}>Next car wash due in</Text>
             ) : (
-                <Text style={[styles.heading, styles.whiteText]}>Thing overdue by</Text>
+                <Text style={[styles.heading, styles.whiteText]}>Car wash overdue by</Text>
             )}
             <View style={styles.row}>
                 <TimeSegment
@@ -142,8 +149,15 @@ export default function CounterScreen() {
                 style={styles.button}
                 activeOpacity={0.8}
             >
-                <Text style={styles.buttonText}>I've done the thing!</Text>
+                <Text style={styles.buttonText}>I've washed the car!</Text>
             </TouchableOpacity>
+            <ConfettiCannon
+                ref={confettiRef}
+                count={50}
+                origin={{ x: width / 2, y: -30 }}
+                autoStart={false}
+                fadeOut={true}
+            />
         </View>
     );
 }
